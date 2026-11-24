@@ -32,6 +32,17 @@ To bump the pin: choose a newer `pytest-homeassistant-custom-component` release,
 Tests run against a real Home Assistant core through `pytest-homeassistant-custom-component`.
 New behaviour needs a test, and a bug fix needs a test that fails without the fix.
 
+## Releases
+
+A release is a merged pull request that bumps `version` in `custom_components/climate_adapt/manifest.json`
+(date-based, `YYYY.M.D.N`) and adds a matching `## <version> - <date>` section to `CHANGELOG.md`.
+
+After a push to `main`, once the Tests, Hassfest and HACS validation workflows have passed for that commit,
+the `Release draft` workflow creates a **draft** GitHub release named `v<version>` for the merge commit, with the
+CHANGELOG section as its notes. It does not create the tag: publishing the draft does. The workflow does nothing
+when a tag or a release (draft or published) for that version already exists, and it fails when the CHANGELOG
+has no section for the version. Do not create tags or releases by hand.
+
 ## Pull requests
 
 - Keep a change focused on one behaviour.
