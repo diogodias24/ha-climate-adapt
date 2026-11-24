@@ -21,10 +21,33 @@ How the decisions are made is explained in [docs/how-it-works.md](docs/how-it-wo
 ## Requirements
 
 - Home Assistant 2026.2.0 or newer. The test suite runs against Home Assistant 2026.2, 2026.10 and 2026.11.
-- A `climate` entity for the unit, and a temperature sensor and a humidity sensor in the room.
-- Optional: an outside temperature and humidity sensor (recommended: they feed the comfort
-  temperature and the fan decision), a motion sensor, a person or device tracker and a mobile app
-  notify service (for offers).
+- Temperatures in °C. Readings are used as they come, with no unit conversion, so the room, outside
+  and unit temperatures must all be in Celsius.
+- No Python packages and no other custom integrations are needed.
+
+### Entities per room
+
+| Entity | Needed | What it must provide |
+| --- | --- | --- |
+| `climate` unit | Required | `hvac_modes` with `off` and the modes you want it to use (`heat`, `cool`), and `climate.set_temperature`. `fan_only` and `dry` are used only when the unit lists them; a fan speed (`high`, or the night-coast speed) is set only when `fan_modes` offers it. |
+| Room temperature sensor | Required | A numeric `sensor` in °C, reporting at least as often as the staleness limit (default 90 min). |
+| Room humidity sensor | Required | A numeric `sensor` in %. |
+| Outside temperature / humidity sensor | Recommended | Numeric `sensor`s in °C and %. They feed the comfort temperature and the fan decision. |
+| Motion sensor | Optional | A `binary_sensor`. `on` means someone is in the room. |
+| Weather entity | Optional | A `weather` entity that answers `weather.get_forecasts` with `type: hourly`. Daily-only providers give night coast no forecast. |
+| PV power sensor | Optional | A `sensor` with device class `power`, in `W` or `kW` (any other unit is read as kW). |
+| Window blind | Optional | A `cover`. Only the state `closed` counts as closed; `open`, `opening`, `closing` and partly open count as open. |
+| Fresh-air scene | Optional | A `scene`. |
+| Suppress entity | Optional | Any entity; `on` holds offers back. |
+
+### Integrations used
+
+| Integration | Needed for | Notes |
+| --- | --- | --- |
+| Sun (`sun.sun`) | Dusk coast and sun load | Part of `default_config`. Without it these rules do not apply. |
+| Persistent notifications | The "sensor unavailable" notice | Built in. |
+| Home Assistant Companion app (`notify.mobile_app_*`) | Phone offers | Only mobile app notify services are offered, because the offer uses actionable notifications (Yes / No buttons). |
+| A person or device tracker | Phone offers | The offer is only sent while it is `home`. |
 
 ## Installation
 

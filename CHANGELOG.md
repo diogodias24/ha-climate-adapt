@@ -20,6 +20,7 @@ Existing rooms load unchanged and need no migration step. Until the new options 
 ### Added
 
 - `docs/entities.md`: what each entity does.
+- README Requirements: what each entity must provide (modes, units, forecast type, blind states) and the integrations the features rely on (Sun, Companion app notify, person/device tracker). Temperatures must be in °C.
 
 ## 2026.11.17.2 - initial public release
 
