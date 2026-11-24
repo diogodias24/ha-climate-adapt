@@ -4,7 +4,7 @@ What Home Assistant and your devices must provide. The short checklist is in the
 
 ## Home Assistant
 
-- Home Assistant 2026.2.0 or newer. The test suite runs against Home Assistant 2026.2, 2026.10 and 2026.11.
+- Home Assistant 2026.2.0 or newer. The code is tested against Home Assistant 2026.2, 2026.10 and 2026.11.
 - **Unit system: Metric (°C)**, under **Settings -> System -> General**. ClimateAdapt does no unit
   conversion. It reads sensor values as plain numbers and sends the setpoint as a plain number, and
   Home Assistant interprets that setpoint in its own unit system. With Imperial units the setpoint

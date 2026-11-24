@@ -2,7 +2,7 @@
 
 Add one entry per room. The README has the quick start; this page lists every option.
 
-**Setup:** the climate entity, the room temperature sensor and the room humidity sensor, then an optional second page with the other entities and limits below. You can submit it unchanged.
+**Setup:** the climate entity, the room temperature sensor and the room humidity sensor, then an optional second page with the sensors, weather, PV, blind and limits. You can submit it unchanged. The fresh-air scene, morning window, empty-room hold and phone offers are set later under Configure.
 
 **Options (Configure):**
 
@@ -15,7 +15,7 @@ Add one entry per room. The README has the quick start; this page lists every op
 | Sensor staleness limit | How old the room reading may be before control pauses (5-240 min, default 90). Set it from your sensor's real reporting cadence. |
 | Heat reading age limit | How old the room reading may be before a *heat* command is held back (5-240 min, default 45). |
 | Outdoor sensor staleness limit | How old the outdoor reading may be before it is treated as absent (5-240 min, default 90). |
-| Fresh-air scene | Optional scene you activate to say "I opened the room to fresh air". ClimateAdapt does not run it; when it notices the activation, the unit is not restarted for the fresh-air pause (default 60 min). |
+| Fresh-air scene | Optional scene you activate to say "I opened the room to fresh air". ClimateAdapt does not run it; when it notices the activation, the unit is not restarted for the fresh-air pause (default 60 min, set with the **Fresh Air Pause** number entity). |
 | Morning cooling window | The time window in which the optional Morning Cooling switch may start fan or cooling (default 07:15-10:00). |
 | Weather entity | Optional. The hourly forecast night coast reads. Without one, the outside temperature stands in when it is cooler than the room by the dusk outside gap. |
 | PV power sensor | Optional. Solar PV power (W or kW) as a sunshine proxy, for dusk coast and sun load. Without one, dusk goes by the sun elevation only. |

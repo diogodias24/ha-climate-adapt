@@ -16,11 +16,11 @@ starts in shadow mode: it shows what it *would* do and sends nothing to the unit
    custom repository `https://github.com/diogodias24/ha-climate-adapt` as an **Integration**,
    install **ClimateAdapt** and restart Home Assistant. Details are under [Installation](#installation).
 2. **Add a room.** Go to **Settings -> Devices & Services -> Add Integration -> Climate Adapt**.
-   Pick the air conditioner (`climate`), the room temperature sensor and the room humidity sensor.
+   Give the room a name (it has a default), then pick the air conditioner (`climate`), the room temperature sensor and the room humidity sensor.
    On the next page you can leave everything as it is and submit.
-3. **Watch it.** The room starts in **shadow mode**. Open the room's comfort sensor: its state is
+3. **Watch it.** The room starts in **shadow mode**. On the room's device page, open the **Comfort** sensor: its state is
    the action ClimateAdapt would take, and its attributes give the reason in plain words.
-4. **Let it drive.** When you like what you see, switch **Enabled** on for that room.
+4. **Let it drive.** When you like what you see, switch **Enabled** on for that room (also on its device page).
 
 Add more rooms the same way, one entry per room.
 
@@ -59,9 +59,9 @@ Open the room under **Settings -> Devices & Services -> Climate Adapt -> Configu
 | --- | --- |
 | Outside temperature / humidity sensor | Lets the comfort temperature follow the weather and lets the fan help when the outside air is cooler. |
 | Sensor staleness limit | Set it from how often your room sensor really reports (default 90 min). Control pauses when the reading is older. |
-| Motion sensor | The unit starts later when the room has been empty for a while. |
-| Weather entity | Lets night coast read the hourly forecast, so the unit is not run on a night that will cool by itself. |
-| Phone offers | Asks on your phone ("turn the AC on?") instead of acting alone. Quiet hours keep it silent at night. |
+| Motion sensor (and switch on **Enable motion**) | The unit starts later when the room has been empty for a while. |
+| Weather entity | Lets night coast read the hourly forecast. Night coast keeps the unit off on a night that will cool by itself. |
+| Phone offers | Asks on your phone ("turn the AC on?") instead of acting alone. Quiet hours keep it silent at night. Offers are only made while the room is in shadow mode (Enabled off). |
 
 Every option, with ranges and defaults, is in [docs/configuration.md](docs/configuration.md).
 
@@ -77,7 +77,7 @@ in [docs/how-it-works.md](docs/how-it-works.md).
 ## Limitations
 
 - The comfort temperature comes from a standard model for people in general (ASHRAE 55), not from
-  your own preference. Hybrid mode is the way to override it.
+  your own preference. Hybrid mode (the Mode switch set to off) lets you set the target yourself.
 - The integration does not learn your preferences from manual changes; it only pauses for the cooldown.
 - On a one-way IR unit the unit's mode is the last one commanded, not a reading of the unit.
 - Fan mode on a split unit only moves the room's own air. If the fan does not lower the room
