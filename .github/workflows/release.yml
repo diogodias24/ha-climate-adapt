@@ -1,0 +1,38 @@
+name: Release draft
+
+# Runs after the Tests, Hassfest and HACS validation workflows finish for a push
+# to main. When all three passed and the manifest version has no tag or release
+# yet, it creates a DRAFT release named v<version> with that version's CHANGELOG
+# section. Publishing the draft creates the tag.
+
+on:
+  workflow_run:
+    workflows: ["Tests", "Hassfest", "HACS validation"]
+    types: [completed]
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: release-draft
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    if: >-
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - name: Draft release for the manifest version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TARGET_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: .github/scripts/draft-release.sh
