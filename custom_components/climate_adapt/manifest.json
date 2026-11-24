@@ -1,6 +1,7 @@
 {
   "domain": "climate_adapt",
   "name": "Climate Adapt",
+  "categories": ["climate"],
   "codeowners": ["@diogodias24"],
   "config_flow": true,
   "dependencies": [],
