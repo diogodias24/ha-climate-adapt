@@ -26,10 +26,10 @@ from custom_components.climate_adapt.night_coast import (
     FORECAST_MAX_AGE_HOURS,
     FORECAST_REFRESH_MINUTES,
     FORECAST_RETRY_MINUTES,
-    PV_ENTITY,
 )
 
 from .comfort_helpers import decide, prepare_live, register_climate
+from .external_entities import PV_POWER_SENSOR, WEATHER_ENTITY
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -38,7 +38,7 @@ CLIMATE = "climate.office_ac"
 TEMP = "sensor.office_temperature"
 HUMIDITY = "sensor.office_humidity"
 SUN = "sun.sun"
-WEATHER = "weather.home"
+WEATHER = WEATHER_ENTITY
 TC = 22.2
 FORECAST = (12.4, 10.8, 8.3, 7.6, 9.9, 11.2, 13.7, 15.4, 16.8, 18.0)
 FORECAST_MIN = min(FORECAST[:8])
@@ -617,9 +617,9 @@ def _sky(
         attributes["rising"] = rising
     hass.states.async_set(SUN, state, attributes)
     if pv is None:
-        hass.states.async_remove(PV_ENTITY)
+        hass.states.async_remove(PV_POWER_SENSOR)
     else:
-        hass.states.async_set(PV_ENTITY, str(pv), {"unit_of_measurement": "kW"})
+        hass.states.async_set(PV_POWER_SENSOR, str(pv), {"unit_of_measurement": "kW"})
 
 
 def _outside(coordinator: ClimateAdaptCoordinator, value: float | None):
@@ -667,7 +667,7 @@ class TestDuskThroughTheCoordinator:
     @pytest.mark.asyncio
     async def test_a_watt_reading_is_converted(self, hass, office, calls) -> None:
         hass.states.async_set(SUN, "above_horizon", {"elevation": 40.0, "rising": False})
-        hass.states.async_set(PV_ENTITY, "400", {"unit_of_measurement": "W"})
+        hass.states.async_set(PV_POWER_SENSOR, "400", {"unit_of_measurement": "W"})
         with _outside(office, 19.0):
             await _tick(hass, office)
         assert calls == []
@@ -747,7 +747,7 @@ class TestDuskThroughTheCoordinator:
         office.command_history.clear()
         await office.async_set_dusk_coast(enabled=True)
         hass.states.async_set(SUN, "above_horizon", {"rising": True})
-        hass.states.async_remove(PV_ENTITY)
+        hass.states.async_remove(PV_POWER_SENSOR)
         with _outside(office, outside):
             await _tick(hass, office, unit)
         today = (

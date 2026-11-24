@@ -24,10 +24,8 @@ from typing import TYPE_CHECKING, Any
 import pytest
 from homeassistant.util import dt as dt_util
 
-from custom_components.climate_adapt.heat_load import HEAT_LOAD_INPUTS_BY_CLIMATE
-from custom_components.climate_adapt.night_coast import PV_ENTITY
-
 from .comfort_helpers import FULL_UNIT
+from .external_entities import HEAT_LOAD_BLIND, PV_POWER_SENSOR, SUN_ENTITY
 from .test_startup_gate import (
     CLIMATE_ENTITY,
     OUTSIDE_TEMP_SENSOR,
@@ -178,10 +176,9 @@ SCENARIOS = {
 
 
 def _sun_on_the_office_window(rig: Rig) -> None:
-    inputs = HEAT_LOAD_INPUTS_BY_CLIMATE[CLIMATE_ENTITY]
-    rig.hass.states.async_set(inputs.sun, "above_horizon")
-    rig.hass.states.async_set(inputs.pv, "2.1", {"unit_of_measurement": "kW"})
-    rig.hass.states.async_set(inputs.blind, "open")
+    rig.hass.states.async_set(SUN_ENTITY, "above_horizon")
+    rig.hass.states.async_set(PV_POWER_SENSOR, "2.1", {"unit_of_measurement": "kW"})
+    rig.hass.states.async_set(HEAT_LOAD_BLIND, "open")
 
 
 def _night(rig: Rig) -> None:
@@ -201,7 +198,7 @@ def _night_no_fan(rig: Rig) -> None:
 
 def _dusk(rig: Rig) -> None:
     rig.hass.states.async_set("sun.sun", "above_horizon", {"elevation": 8.0, "rising": False})
-    rig.hass.states.async_set(PV_ENTITY, "0.4", {"unit_of_measurement": "kW"})
+    rig.hass.states.async_set(PV_POWER_SENSOR, "0.4", {"unit_of_measurement": "kW"})
 
 
 def _fan_ran_30_min_and_did_not_cool(rig: Rig) -> None:

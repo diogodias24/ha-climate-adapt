@@ -19,9 +19,6 @@ from typing import Any
 
 SUN_BELOW_HORIZON = "below_horizon"
 SUN_ABOVE_HORIZON = "above_horizon"
-# Hard-coded entity ids: edit these to match your installation.
-WEATHER_ENTITY = "weather.home"
-PV_ENTITY = "sensor.pv_power"
 
 DEFAULT_ENABLED = True
 
@@ -285,9 +282,7 @@ def _as_utc(value: datetime) -> datetime:
     return value.replace(tzinfo=UTC) if value.tzinfo is None else value
 
 
-def parse_forecast(
-    response: Any, entity_id: str = WEATHER_ENTITY
-) -> list[tuple[datetime, float]]:
+def parse_forecast(response: Any, entity_id: str) -> list[tuple[datetime, float]]:
     """The (time, temperature) pairs of a ``weather.get_forecasts`` response; junk is dropped."""
     if not isinstance(response, dict):
         return []

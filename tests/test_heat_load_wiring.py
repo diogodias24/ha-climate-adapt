@@ -7,18 +7,18 @@ import pytest
 
 from custom_components.climate_adapt.coordinator import ClimateAdaptCoordinator
 from custom_components.climate_adapt.heat_load import (
-    HEAT_LOAD_INPUTS_BY_CLIMATE,
     NO_HEAT_LOAD,
     HeatLoadInputs,
-    heat_load_inputs_for,
+    heat_load_inputs,
     read_heat_load,
 )
 
 from .comfort_helpers import decide, prepare_live, register_climate
+from .external_entities import HEAT_LOAD_BLIND, PV_POWER_SENSOR, SUN_ENTITY
 
-SUN = "sun.sun"
-PV = "sensor.pv_power"
-BLIND = "cover.office_blind"
+SUN = SUN_ENTITY
+PV = PV_POWER_SENSOR
+BLIND = HEAT_LOAD_BLIND
 INPUTS = HeatLoadInputs(sun=SUN, pv=PV, blind=BLIND, pv_threshold_kw=1.0)
 
 
@@ -80,12 +80,20 @@ class TestReadHeatLoad:
         got = read_heat_load(None, _S("above_horizon"), _S("9"), _S("open"))
         assert got is NO_HEAT_LOAD
 
-    def test_only_the_office_has_inputs(self) -> None:
-        assert set(HEAT_LOAD_INPUTS_BY_CLIMATE) == {"climate.office_ac"}
-        assert heat_load_inputs_for("climate.room_b_ac") is None
-        office = heat_load_inputs_for("climate.office_ac")
-        assert office is not None
-        assert (office.sun, office.pv, office.blind) == (SUN, PV, BLIND)
+    def test_the_inputs_are_the_rooms_pv_sensor_and_blind(self) -> None:
+        assert heat_load_inputs(PV, BLIND, 1.0) == INPUTS
+        assert heat_load_inputs(PV, BLIND, 2.5) == HeatLoadInputs(
+            sun=SUN, pv=PV, blind=BLIND, pv_threshold_kw=2.5
+        )
+
+    @pytest.mark.parametrize(
+        ("pv", "blind"),
+        [(None, None), (PV, None), (None, BLIND), ("", BLIND), (PV, "  ")],
+    )
+    def test_a_room_without_both_a_pv_sensor_and_a_blind_has_no_inputs(
+        self, pv: str | None, blind: str | None
+    ) -> None:
+        assert heat_load_inputs(pv, blind, 1.0) is None
 
 
 @pytest.fixture

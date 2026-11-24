@@ -114,6 +114,10 @@ PRECEDENCE_CASES: dict[str, tuple[object, object]] = {
     "fresh_air_scene": ("scene.fresh_air", "scene.other_fresh_air"),
     "morning_window_start": ("06:30:00", "07:00:00"),
     "morning_window_end": ("09:00:00", "11:00:00"),
+    "weather_entity": ("weather.home", "weather.other"),
+    "pv_power_sensor": ("sensor.pv_power", "sensor.other_pv_power"),
+    "heat_load_blind": ("cover.office_blind", "cover.other_blind"),
+    "heat_load_pv_threshold": (1.0, 2.5),
 }
 
 

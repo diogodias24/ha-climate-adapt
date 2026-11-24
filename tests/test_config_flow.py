@@ -11,6 +11,8 @@ from homeassistant.data_entry_flow import FlowResultType
 from custom_components.climate_adapt.const import (
     CONF_CLIMATE_ENTITY,
     CONF_ENABLE_MOTION,
+    CONF_HEAT_LOAD_BLIND,
+    CONF_HEAT_LOAD_PV_THRESHOLD,
     CONF_HEAT_STALE_MINUTES,
     CONF_HUMIDITY_SENSOR,
     CONF_MANUAL_COOLDOWN,
@@ -21,9 +23,12 @@ from custom_components.climate_adapt.const import (
     CONF_OUTSIDE_HUMIDITY_SENSOR,
     CONF_OUTSIDE_STALE_MINUTES,
     CONF_OUTSIDE_TEMP_SENSOR,
+    CONF_PV_POWER_SENSOR,
     CONF_SENSOR_STALE_MINUTES,
     CONF_TEMP_SENSOR,
+    CONF_WEATHER_ENTITY,
     DEFAULT_ADAPTATION_INTERVAL,
+    DEFAULT_HEAT_LOAD_PV_THRESHOLD_KW,
     DEFAULT_HEAT_STALE_MINUTES,
     DEFAULT_MANUAL_COOLDOWN_MINUTES,
     DEFAULT_MOTION_HOLD_MINUTES,
@@ -86,6 +91,7 @@ async def test_form_user(hass: HomeAssistant, mock_setup_entry) -> None:
         CONF_SENSOR_STALE_MINUTES: DEFAULT_SENSOR_STALE_MINUTES,
         CONF_HEAT_STALE_MINUTES: DEFAULT_HEAT_STALE_MINUTES,
         CONF_OUTSIDE_STALE_MINUTES: DEFAULT_OUTSIDE_STALE_MINUTES,
+        CONF_HEAT_LOAD_PV_THRESHOLD: DEFAULT_HEAT_LOAD_PV_THRESHOLD_KW,
     }
     assert len(mock_setup_entry.mock_calls) == 1
 
@@ -178,4 +184,10 @@ async def test_options_flow(hass: HomeAssistant, mock_config_entry) -> None:
         CONF_SENSOR_STALE_MINUTES: DEFAULT_SENSOR_STALE_MINUTES,
         CONF_HEAT_STALE_MINUTES: DEFAULT_HEAT_STALE_MINUTES,
         CONF_OUTSIDE_STALE_MINUTES: DEFAULT_OUTSIDE_STALE_MINUTES,
+        # Left empty on the form, so the entities the entry held in `data`
+        # are cleared, as for every other entity field.
+        CONF_WEATHER_ENTITY: None,
+        CONF_PV_POWER_SENSOR: None,
+        CONF_HEAT_LOAD_BLIND: None,
+        CONF_HEAT_LOAD_PV_THRESHOLD: DEFAULT_HEAT_LOAD_PV_THRESHOLD_KW,
     }

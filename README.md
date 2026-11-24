@@ -59,11 +59,16 @@ Add one entry per room.
 | Outdoor sensor staleness limit | How old the outdoor reading may be before it is treated as absent (5-240 min, default 90). |
 | Fresh-air scene | Optional scene that opens the room to fresh air. After it is activated the unit is not restarted for the fresh-air pause (default 60 min). |
 | Morning cooling window | The time window in which the optional Morning Cooling switch may start fan or cooling (default 07:15-10:00). |
+| Weather entity | Optional. The hourly forecast night coast reads. Without one, the outside temperature stands in when it is cooler than the room by the dusk outside gap. |
+| PV power sensor | Optional. Solar PV power (W or kW) as a sunshine proxy, for dusk coast and sun load. Without one, dusk goes by the sun elevation only. |
+| Window blind (sun load) and sun-load PV threshold | Optional. With the PV power sensor set, PV at or above the threshold (default 1.0 kW) while the sun is up and this cover is not closed counts as sun on the window: the room skips the fan stage and cools at once. Without a blind the room has no sun load. |
 | Phone offers | Enable offers, choose the person or device tracker that must be home, and the notify service of the phone (for example `notify.mobile_app_your_phone`). |
 | Quiet hours for offers | Start and end (local time, default 23:00-08:00, may cross midnight; equal start and end means no quiet hours). No offer is sent inside the window. |
 | Suppress offers while this entity is on | Optional entity (for example a sleep or focus switch). While it is on, no offer is sent. An entity that is unavailable or unknown counts as off. |
 
 Clearing an optional entity field saves it as cleared.
+
+The weather entity, PV sensor and blind are set per room. They can be set when the room is added or later under Configure, and take effect at the next evaluation.
 
 A held-back offer is not queued: the first check after the quiet period or the suppress entity ends
 offers again if the room still needs it. Your own Yes/No taps on an earlier offer are never blocked.
@@ -79,7 +84,8 @@ plain words, the heat/cool switch protection state, the night coast state, and w
 doing what was last decided. Even with a room switched off, the sensor shows what the integration
 would do. The other entities (targets, switches for Enabled, Mode, Keep Climate On, Dry Mode, Night
 Coast, Fresh Air Pause and Morning Cooling, a Send Now button, and an "input stale" binary sensor)
-are described in [docs/how-it-works.md](docs/how-it-works.md).
+are described in [docs/how-it-works.md](docs/how-it-works.md) and listed in
+[docs/entities.md](docs/entities.md).
 
 ## Limitations
 
@@ -89,11 +95,8 @@ are described in [docs/how-it-works.md](docs/how-it-works.md).
 - On a one-way IR unit the unit's mode is the last one commanded, not a reading of the unit.
 - Fan mode on a split unit only moves the room's own air. If the fan does not lower the room
   temperature, cooling takes over; opening a window is what really cools a room.
-- Night coast reads the hourly forecast of the weather entity `weather.home` and PV power from
-  `sensor.pv_power`. The sun-load rule that brings cooling forward is wired to one room
-  (`climate.office_ac`, blind `cover.office_blind`). These entity ids are fixed in the code
-  (`night_coast.py`, `heat_load.py`) and are not yet configurable: edit them to match your
-  installation. If an entity does not exist the rule does not apply and the normal ladder runs
+- The sun entity is always `sun.sun`. If it, or a configured weather, PV or blind entity, does
+  not exist or is unreadable, the rule that reads it does not apply and the normal ladder runs
   unchanged.
 - Quiet hours and the suppress entity only gate phone offers. They do not affect climate control.
 
