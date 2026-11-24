@@ -1,0 +1,12 @@
+{
+  "domain": "climate_adapt",
+  "name": "Climate Adapt",
+  "codeowners": ["@diogodias24"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/diogodias24/ha-climate-adapt",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/diogodias24/ha-climate-adapt/issues",
+  "requirements": [],
+  "version": "2026.11.17.2"
+}

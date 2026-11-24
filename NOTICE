@@ -1,0 +1,9 @@
+ClimateAdapt
+Copyright 2026 diogodias24
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Third-party material: none. No third-party code or data is bundled or vendored in this
+repository. The comfort model follows the published ASHRAE 55 adaptive comfort equation and the
+perceived temperature uses the published NWS Rothfusz heat-index regression. Both are public
+formulas, implemented here from their descriptions; no source code from either is included.

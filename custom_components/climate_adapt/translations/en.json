@@ -1,0 +1,246 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Climate Adapt Setup",
+        "description": "Configure your comfort-based climate control.",
+        "data": {
+          "name": "Name",
+          "climate_entity": "Climate Entity (AC)",
+          "temp_sensor": "Temperature Sensor",
+          "humidity_sensor": "Humidity Sensor"
+        },
+        "data_description": {
+          "name": "Display name for this climate control instance",
+          "climate_entity": "The AC/climate entity to control",
+          "temp_sensor": "Temperature sensor for the room",
+          "humidity_sensor": "Humidity sensor for the room"
+        }
+      },
+      "advanced": {
+        "title": "Advanced Settings",
+        "description": "Adjust temperature precision and optional sensors.",
+        "data": {
+          "enable_motion": "Enable Motion Sensor",
+          "motion_sensor": "Motion Sensor (optional)",
+          "outside_temp_sensor": "Outside Temperature Sensor (optional)",
+          "outside_humidity_sensor": "Outside Humidity Sensor (optional)",
+          "adaptation_interval": "Adaptation Interval (minutes)",
+          "manual_cooldown_minutes": "Manual Override Cooldown (minutes)",
+          "sensor_stale_minutes": "Sensor Staleness Limit (minutes)",
+          "heat_stale_minutes": "Heating Reading Age Limit (minutes)",
+          "outside_stale_minutes": "Outdoor Sensor Staleness Limit (minutes)"
+        },
+        "data_description": {
+          "enable_motion": "Use motion sensor for presence-based adjustments",
+          "motion_sensor": "Motion sensor to detect room occupancy",
+          "outside_temp_sensor": "Outside temperature: sets the adaptive comfort temperature and whether a fan can help",
+          "outside_humidity_sensor": "Outside humidity: used to tell whether outdoor air is drier than the room",
+          "adaptation_interval": "How often to adapt temperature (5-60 minutes)",
+          "manual_cooldown_minutes": "How long to wait after you manually change a value before the automation adjusts again (minimum 60)",
+          "sensor_stale_minutes": "How old this room's temperature reading may be before control pauses. Sensors that report on change go quiet while a room is stable - battery-powered devices can be silent for an hour. Use a short window only for sensors that report continuously (5-240)",
+          "heat_stale_minutes": "How old this room's temperature reading may be before a heat command is held back until the next report. Cooling and the general limit above are not affected. A value at or above the general limit has no effect (5-240)",
+          "outside_stale_minutes": "How old the outdoor reading may be before it is dropped from the comfort model. This is a dead-device window - hours, not minutes - and it judges a sensor that every room pointing at it shares (5-240)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This device is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Climate Adapt Options",
+        "description": "Adjust motion settings.",
+        "data": {
+          "enable_motion": "Enable Motion Sensor",
+          "motion_hold_minutes": "Empty-room hold (minutes)"
+        },
+        "data_description": {
+          "enable_motion": "Use motion sensor for presence-based adjustments",
+          "motion_hold_minutes": "How long the motion sensor must have been off before the room counts as empty and the unit starts later (1-240). Someone walking in while the unit is off gets one evaluation at once. An unreadable sensor counts as occupied"
+        }
+      },
+      "advanced": {
+        "title": "Advanced Options",
+        "description": "Adjust optional sensors and settings.",
+        "data": {
+          "outside_temp_sensor": "Outside Temperature Sensor (optional)",
+          "outside_humidity_sensor": "Outside Humidity Sensor (optional)",
+          "motion_sensor": "Motion Sensor (optional)",
+          "adaptation_interval": "Adaptation Interval (minutes)",
+          "manual_cooldown_minutes": "Manual Override Cooldown (minutes)",
+          "sensor_stale_minutes": "Sensor Staleness Limit (minutes)",
+          "heat_stale_minutes": "Heating Reading Age Limit (minutes)",
+          "outside_stale_minutes": "Outdoor Sensor Staleness Limit (minutes)",
+          "fresh_air_scene": "Fresh-Air Scene (optional)",
+          "morning_window_start": "Morning Cooling Window Start",
+          "morning_window_end": "Morning Cooling Window End"
+        },
+        "data_description": {
+          "outside_temp_sensor": "Outside temperature: sets the adaptive comfort temperature and whether a fan can help",
+          "outside_humidity_sensor": "Outside humidity: used to tell whether outdoor air is drier than the room",
+          "motion_sensor": "Motion sensor to detect room occupancy",
+          "adaptation_interval": "How often to adapt temperature (5-60 minutes)",
+          "manual_cooldown_minutes": "How long to wait after you manually change a value before the automation adjusts again (minimum 60)",
+          "sensor_stale_minutes": "How old this room's temperature reading may be before control pauses. Sensors that report on change go quiet while a room is stable - battery-powered devices can be silent for an hour. Use a short window only for sensors that report continuously (5-240)",
+          "heat_stale_minutes": "How old this room's temperature reading may be before a heat command is held back until the next report. Cooling and the general limit above are not affected. A value at or above the general limit has no effect (5-240)",
+          "outside_stale_minutes": "How old the outdoor reading may be before it is dropped from the comfort model. This is a dead-device window - hours, not minutes - and it judges a sensor that every room pointing at it shares (5-240)",
+          "fresh_air_scene": "Activating this scene starts the fresh-air pause: the unit is not restarted for the pause length set on the room's Fresh Air Pause number",
+          "morning_window_start": "Morning cooling starts no earlier than this time",
+          "morning_window_end": "Morning cooling starts no later than this time"
+        }
+      },
+      "offers": {
+        "title": "Phone Offers",
+        "description": "Ask on your phone before turning the AC on or off in this room while the room is switched off in Climate Adapt. Off by default.",
+        "data": {
+          "offer_enabled": "Offer to turn the AC on or off",
+          "offer_person": "Person or device tracker (offers are sent only while home)",
+          "offer_notify_service": "Notify service for your phone",
+          "offer_quiet_start": "Quiet hours start (no offers)",
+          "offer_quiet_end": "Quiet hours end",
+          "offer_suppress_entity": "Also stay quiet while this entity is on (optional)"
+        },
+        "data_description": {
+          "offer_enabled": "Sends a Yes/No notification when this switched-off room would benefit from the AC, and again when it no longer does after you said Yes. Does nothing until a person and a notify service are set.",
+          "offer_person": "Offers are sent only while this entity is home.",
+          "offer_notify_service": "For example notify.mobile_app_your_phone.",
+          "offer_quiet_start": "From this local time no offer is sent to your phone. Default 23:00. The window may cross midnight; start equal to end means no quiet hours.",
+          "offer_quiet_end": "Offers can be sent again from this local time. Default 08:00.",
+          "offer_suppress_entity": "For example a bedroom or sleep-mode switch. While it is on, no offer is sent. Leave empty to use the quiet hours only. If it is unavailable or unknown it counts as off. An offer that is held back is not sent later on its own; the next check after the quiet period offers again if the room still needs it."
+        }
+      }
+    }
+  },
+  "entity": {
+    "number": {
+      "target_temperature": {
+        "name": "Target Temperature"
+      },
+      "night_coast_ceiling": {
+        "name": "Night Coast Ceiling"
+      },
+      "night_coast_forecast_hours": {
+        "name": "Night Coast Forecast Hours"
+      },
+      "night_coast_margin": {
+        "name": "Night Coast Margin"
+      },
+      "dusk_coast_sun_elevation": {
+        "name": "Dusk Coast Sun Elevation"
+      },
+      "dusk_coast_pv": {
+        "name": "Dusk Coast PV"
+      },
+      "dusk_coast_outside_gap": {
+        "name": "Dusk Coast Outside Gap"
+      },
+      "coast_fan_minutes": {
+        "name": "Coast Fan Minutes"
+      },
+      "heat_dead_zone": {
+        "name": "Heat Dead-Zone"
+      },
+      "fresh_air_minutes": {
+        "name": "Fresh Air Pause"
+      },
+      "morning_cool_start": {
+        "name": "Morning Cool Start"
+      }
+    },
+    "sensor": {
+      "mode": {
+        "name": "Mode"
+      },
+      "perceived_temp": {
+        "name": "Perceived Temperature"
+      },
+      "button_action": {
+        "name": "Button Activity"
+      },
+      "recommended_temperature": {
+        "name": "Recommended Temperature"
+      },
+      "effective_target": {
+        "name": "Effective Target"
+      },
+      "comfort": {
+        "name": "Comfort"
+      },
+      "last_command": {
+        "name": "Last Command"
+      }
+    },
+    "switch": {
+      "enabled": {
+        "name": "Enabled"
+      },
+      "mode": {
+        "name": "Mode"
+      },
+      "keep_climate_on": {
+        "name": "Keep Climate On"
+      },
+      "dry_mode": {
+        "name": "Dry Mode"
+      },
+      "dusk_coast": {
+        "name": "Dusk Coast"
+      },
+      "coast_fan_step": {
+        "name": "Coast Fan Step"
+      },
+      "night_coast": {
+        "name": "Night Coast"
+      },
+      "fresh_air_pause": {
+        "name": "Fresh Air Pause"
+      },
+      "morning_cooling": {
+        "name": "Morning Cooling"
+      }
+    },
+    "button": {
+      "send_now": {
+        "name": "Send Now"
+      }
+    },
+    "select": {
+      "coast_fan_speed": {
+        "name": "Coast Fan Speed"
+      },
+      "hvac_mode": {
+        "name": "HVAC Mode"
+      }
+    },
+    "binary_sensor": {
+      "input_stale": {
+        "name": "Input Stale"
+      }
+    }
+  },
+  "issues": {
+    "stale_input": {
+      "title": "Climate Adapt: {name} is not controlling the AC",
+      "description": "`{sensor}` has not reported usable data for {age} minutes (reason: {reason}, threshold: {stale_minutes} minutes), so Climate Adapt has stopped making decisions for **{climate_entity}**. The room is uncontrolled until the sensor reports again. Check the sensor's device (a sensor that stopped transmitting can still look populated in Home Assistant when a retained MQTT payload is replayed at startup). This issue clears itself when fresh data returns."
+    },
+    "frozen_input": {
+      "title": "Climate Adapt: {name} is not controlling the AC",
+      "description": "`{sensor}` has read **{value}** for {age} minutes without a single different value, even though it may still look alive (a sensor that has lost its radio link can keep flickering through unavailable and unknown and come back with the same number). A healthy room sensor never holds one reading this long, so Climate Adapt has stopped making decisions for **{climate_entity}** after {frozen_hours} hours and sends it no new command. The room is uncontrolled until the sensor reports a different value. Check the sensor's device (battery, link quality, re-pair). This issue clears itself when a different value arrives."
+    },
+    "stale_outside_input": {
+      "title": "Climate Adapt: {name} has lost its outdoor reading",
+      "description": "`{sensor}` has not reported usable data for {age} minutes (reason: {reason}, last value: {value}, threshold: {stale_minutes} minutes), so Climate Adapt has dropped the outdoor reading from its decisions for **{climate_entity}**.\n\nThe room is **still being controlled** - this is not the same as a stale room sensor, which stops the loop. What is lost is the outdoor input: the comfort temperature falls back to the daily means already collected, and the fan option is unavailable. The comfort floor on cooling is unaffected: it reads the room only.\n\nA reading is dropped rather than held because a frozen value drifts further from the real weather every hour. Check the sensor's device - a battery device that stopped transmitting can still look populated in Home Assistant. This issue clears itself when fresh data returns."
+    },
+    "implausible_outside_input": {
+      "title": "Climate Adapt: {name}'s outdoor reading is not believable",
+      "description": "`{sensor}` is reporting **{value}**, which Climate Adapt has rejected as impossible rather than merely old ({detail}), so it has dropped the outdoor reading from its decisions for **{climate_entity}**.\n\n**This is not a stale sensor.** The device is transmitting, and recently - the reading was rejected on its *value*, not its age. Replacing the battery or re-pairing will not change it; the device itself is reporting something it cannot have measured. The known signature is an exact 0.0 C arriving together with an exact 0% relative humidity, which is a device saying \"nothing\" rather than a measurement, because 0% outdoor humidity is not physically attainable.\n\nThe room is **still being controlled** - this is not the same as a stale room sensor, which stops the loop. What is lost is the outdoor input: the comfort temperature falls back to the daily means already collected, and the fan option is unavailable. The comfort floor on cooling is unaffected, because it reads the room only.\n\nThis issue clears itself as soon as the device reports a believable value again - no restart or reload is needed."
+    }
+  }
+}

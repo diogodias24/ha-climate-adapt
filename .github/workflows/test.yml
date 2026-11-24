@@ -1,0 +1,50 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      # Lint HA version: pytest-homeassistant-custom-component 0.13.375 pins homeassistant 2026.10.4. See CONTRIBUTING.md before bumping.
+      - run: pip install -r requirements_test.txt "pytest-homeassistant-custom-component==0.13.375" ruff mypy bandit
+      - name: Ruff lint
+        run: ruff check custom_components/ tests/
+      - name: Type check
+        run: mypy custom_components/
+      - name: Security scan
+        run: bandit -r custom_components/ -q
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: pip install -r requirements_test.txt pytest-cov
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ -v \
+            --cov=custom_components/climate_adapt \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --cov-fail-under=85
+      - name: Upload coverage
+        if: matrix.python-version == '3.14'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml

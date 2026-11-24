@@ -1,0 +1,128 @@
+# ClimateAdapt
+
+[![Tests](https://github.com/diogodias24/ha-climate-adapt/actions/workflows/test.yml/badge.svg)](https://github.com/diogodias24/ha-climate-adapt/actions/workflows/test.yml)
+[![Hassfest](https://github.com/diogodias24/ha-climate-adapt/actions/workflows/hassfest.yml/badge.svg)](https://github.com/diogodias24/ha-climate-adapt/actions/workflows/hassfest.yml)
+[![HACS](https://github.com/diogodias24/ha-climate-adapt/actions/workflows/hacs.yml/badge.svg)](https://github.com/diogodias24/ha-climate-adapt/actions/workflows/hacs.yml)
+
+Adaptive-comfort climate control for Home Assistant. ClimateAdapt keeps a room comfortable by
+steering an existing `climate` entity (a split AC, a heat pump, an IR-controlled unit) from the
+room's own temperature and humidity and from the weather outside. It decides one action per room
+on every tick: **heat, fan, cool, dry or off**, and tells you why.
+
+- A comfort temperature that follows the weather (ASHRAE 55 adaptive model), or your own target (Hybrid mode).
+- One decision ladder, with a heat/cool dwell so a unit never flip-flops.
+- Humidity-aware dry mode, night coast, fresh-air pause, optional morning cooling.
+- Shadow mode: see what it *would* do before you let it send anything.
+- Optional motion sensor, and optional phone offers ("turn the AC on?") with quiet hours.
+- Refuses to act on stale, frozen or implausible sensor readings, and says so.
+
+How the decisions are made is explained in [docs/how-it-works.md](docs/how-it-works.md).
+
+## Requirements
+
+- Home Assistant 2026.2.0 or newer. The test suite runs against Home Assistant 2026.2, 2026.10 and 2026.11.
+- A `climate` entity for the unit, and a temperature sensor and a humidity sensor in the room.
+- Optional: an outside temperature and humidity sensor (recommended: they feed the comfort
+  temperature and the fan decision), a motion sensor, a person or device tracker and a mobile app
+  notify service (for offers).
+
+## Installation
+
+### HACS (custom repository)
+
+1. In HACS, open the menu and choose **Custom repositories**.
+2. Add `https://github.com/diogodias24/ha-climate-adapt` with category **Integration**.
+3. Install **ClimateAdapt** and restart Home Assistant.
+4. Go to **Settings -> Devices & Services -> Add Integration -> Climate Adapt**.
+
+### Manual
+
+Copy the `custom_components/climate_adapt` folder of this repository into the `custom_components`
+folder of your Home Assistant configuration, restart Home Assistant, and add the integration as above.
+
+## Configuration
+
+Add one entry per room.
+
+**Setup (config flow):** the climate entity, the room temperature sensor and the room humidity sensor.
+
+**Options (Configure):**
+
+| Option | What it does |
+| --- | --- |
+| Outside temperature / humidity sensor | Feed the adaptive comfort temperature and the fan decision. Implausible outside readings are screened out. |
+| Motion sensor, enable motion, empty-room hold | Optional. With a motion sensor the unit starts later once the room has been empty for the hold (1-240 min, default 20). Someone walking in evaluates the room at once. An unreadable sensor counts as occupied. |
+| Adaptation interval | How often the room is evaluated (5-60 min, default 15). |
+| Manual cooldown | How long the loop stays out of the way after you change the unit yourself (60-480 min, default 60). |
+| Sensor staleness limit | How old the room reading may be before control pauses (5-240 min, default 90). Set it from your sensor's real reporting cadence. |
+| Heat reading age limit | How old the room reading may be before a *heat* command is held back (5-240 min, default 45). |
+| Outdoor sensor staleness limit | How old the outdoor reading may be before it is treated as absent (5-240 min, default 90). |
+| Fresh-air scene | Optional scene that opens the room to fresh air. After it is activated the unit is not restarted for the fresh-air pause (default 60 min). |
+| Morning cooling window | The time window in which the optional Morning Cooling switch may start fan or cooling (default 07:15-10:00). |
+| Phone offers | Enable offers, choose the person or device tracker that must be home, and the notify service of the phone (for example `notify.mobile_app_your_phone`). |
+| Quiet hours for offers | Start and end (local time, default 23:00-08:00, may cross midnight; equal start and end means no quiet hours). No offer is sent inside the window. |
+| Suppress offers while this entity is on | Optional entity (for example a sleep or focus switch). While it is on, no offer is sent. An entity that is unavailable or unknown counts as off. |
+
+Clearing an optional entity field saves it as cleared.
+
+A held-back offer is not queued: the first check after the quiet period or the suppress entity ends
+offers again if the room still needs it. Your own Yes/No taps on an earlier offer are never blocked.
+
+A new room starts in **shadow mode** (Enabled off): the decision is published on the comfort sensor
+and nothing is sent to the unit until you switch Enabled on.
+
+## What you see
+
+Each room has a comfort sensor whose state is the chosen action (`off`, `heat`, `cool`, `fan` or
+`dry`). Its attributes carry the comfort temperature and band, the readings used, the reason in
+plain words, the heat/cool switch protection state, the night coast state, and whether the unit is
+doing what was last decided. Even with a room switched off, the sensor shows what the integration
+would do. The other entities (targets, switches for Enabled, Mode, Keep Climate On, Dry Mode, Night
+Coast, Fresh Air Pause and Morning Cooling, a Send Now button, and an "input stale" binary sensor)
+are described in [docs/how-it-works.md](docs/how-it-works.md).
+
+## Limitations
+
+- The comfort temperature comes from a standard model for people in general (ASHRAE 55), not from
+  your own preference. Hybrid mode is the way to override it.
+- The integration does not learn your preferences from manual changes; it only pauses for the cooldown.
+- On a one-way IR unit the unit's mode is the last one commanded, not a reading of the unit.
+- Fan mode on a split unit only moves the room's own air. If the fan does not lower the room
+  temperature, cooling takes over; opening a window is what really cools a room.
+- Night coast reads the hourly forecast of the weather entity `weather.home` and PV power from
+  `sensor.pv_power`. The sun-load rule that brings cooling forward is wired to one room
+  (`climate.office_ac`, blind `cover.office_blind`). These entity ids are fixed in the code
+  (`night_coast.py`, `heat_load.py`) and are not yet configurable: edit them to match your
+  installation. If an entity does not exist the rule does not apply and the normal ladder runs
+  unchanged.
+- Quiet hours and the suppress entity only gate phone offers. They do not affect climate control.
+
+## Development
+
+```bash
+pip install -r requirements_dev.txt
+make check   # ruff, mypy, bandit
+make test    # pytest
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Changes are listed in [CHANGELOG.md](CHANGELOG.md).
+
+## Support
+
+Questions and bug reports: <https://github.com/diogodias24/ha-climate-adapt/issues>. If you attach
+diagnostics or logs, remove anything you do not want to share first.
+
+## Licence
+
+ClimateAdapt is licensed under the **Apache License, Version 2.0** (SPDX identifier
+`Apache-2.0`). See [LICENSE](LICENSE) and [NOTICE](NOTICE). Redistributions must keep the
+copyright notice and the NOTICE file.
+
+Copyright 2026 diogodias24
+
+## Notices
+
+No third-party code or data is bundled or vendored in this repository. The tests use synthetic,
+generated data only. The comfort model follows the published ASHRAE 55 adaptive comfort equation,
+and the perceived temperature uses the published NWS Rothfusz heat-index regression. Both are public
+formulas, implemented here from their descriptions. The [NOTICE](NOTICE) file lists this.

@@ -1,0 +1,27 @@
+{
+  "source": "synthetic: shape of a fan_only table in which the 'auto' column has no IR frames",
+  "fan_modes": [
+    "auto",
+    "low",
+    "mid",
+    "high"
+  ],
+  "fan_only": {
+    "auto": {
+      "cells": 33,
+      "filled": 0
+    },
+    "low": {
+      "cells": 33,
+      "filled": 33
+    },
+    "mid": {
+      "cells": 33,
+      "filled": 33
+    },
+    "high": {
+      "cells": 33,
+      "filled": 33
+    }
+  }
+}
