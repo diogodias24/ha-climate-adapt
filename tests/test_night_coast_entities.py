@@ -235,12 +235,18 @@ class TestHelpers:
                 ]
             }
         }
-        assert parse_forecast(response) == [
+        assert parse_forecast(response, "weather.home") == [
             ((NOW + timedelta(hours=1)), 12.0),
             (NOW, 3.0),
         ]
-        assert parse_forecast(None) == []
-        assert parse_forecast({"weather.home": {"forecast": None}}) == []
+        assert parse_forecast(None, "weather.home") == []
+        assert parse_forecast({"weather.home": {"forecast": None}}, "weather.home") == []
+
+    def test_parse_forecast_reads_only_the_entity_it_was_asked_for(self) -> None:
+        iso = (NOW + timedelta(hours=1)).isoformat()
+        response = {"weather.other": {"forecast": [{"datetime": iso, "temperature": 12.0}]}}
+        assert parse_forecast(response, "weather.home") == []
+        assert parse_forecast(response, "weather.other") == [(NOW + timedelta(hours=1), 12.0)]
 
     def test_forecast_minimum_window_and_count(self) -> None:
         entries = [(NOW + timedelta(hours=h), t) for h, t in enumerate([20, 5, 9, 1])]

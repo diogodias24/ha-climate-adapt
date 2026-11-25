@@ -8,9 +8,9 @@ sunshine proxy), and the room's blind not closed (is the window exposed). Any in
 missing, ``unavailable`` or ``unknown`` means no sun load: the signal can only bring cooling
 forward, never hold it back.
 
-Rooms are keyed by their climate entity in ``HEAT_LOAD_INPUTS_BY_CLIMATE``. A
-room with no entry there never has sun load. The table is a module-level
-constant: point it at your own climate, PV and blind entities.
+The PV sensor, the blind and the threshold are the room's own options
+(``heat_load_inputs``). A room without both a PV sensor and a blind never has
+sun load.
 """
 
 from __future__ import annotations
@@ -19,12 +19,10 @@ import math
 from dataclasses import dataclass
 from typing import Any, Protocol
 
+SUN_ENTITY = "sun.sun"
 SUN_ABOVE_HORIZON = "above_horizon"
 BLIND_CLOSED = "closed"
 UNREADABLE = ("unavailable", "unknown", "", "none")
-
-# PV power at or above this is taken as direct sun on the window (kW).
-OFFICE_PV_THRESHOLD_KW = 1.0
 
 
 @dataclass(frozen=True)
@@ -33,16 +31,6 @@ class HeatLoadInputs:
     pv: str
     blind: str
     pv_threshold_kw: float
-
-
-HEAT_LOAD_INPUTS_BY_CLIMATE: dict[str, HeatLoadInputs] = {
-    "climate.office_ac": HeatLoadInputs(
-        sun="sun.sun",
-        pv="sensor.pv_power",
-        blind="cover.office_blind",
-        pv_threshold_kw=OFFICE_PV_THRESHOLD_KW,
-    ),
-}
 
 
 class _StateLike(Protocol):
@@ -60,8 +48,15 @@ class HeatLoad:
 NO_HEAT_LOAD = HeatLoad(active=False, inputs=None, note=None)
 
 
-def heat_load_inputs_for(climate_entity: str) -> HeatLoadInputs | None:
-    return HEAT_LOAD_INPUTS_BY_CLIMATE.get(climate_entity)
+def heat_load_inputs(
+    pv: str | None, blind: str | None, pv_threshold_kw: float
+) -> HeatLoadInputs | None:
+    """The room's sun-load inputs, or None when its PV sensor or blind is not set."""
+    pv = (pv or "").strip()
+    blind = (blind or "").strip()
+    if not pv or not blind:
+        return None
+    return HeatLoadInputs(sun=SUN_ENTITY, pv=pv, blind=blind, pv_threshold_kw=pv_threshold_kw)
 
 
 def _text(state: _StateLike | None) -> str | None:

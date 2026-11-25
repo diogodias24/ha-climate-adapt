@@ -29,7 +29,11 @@
           "manual_cooldown_minutes": "Manual Override Cooldown (minutes)",
           "sensor_stale_minutes": "Sensor Staleness Limit (minutes)",
           "heat_stale_minutes": "Heating Reading Age Limit (minutes)",
-          "outside_stale_minutes": "Outdoor Sensor Staleness Limit (minutes)"
+          "outside_stale_minutes": "Outdoor Sensor Staleness Limit (minutes)",
+          "weather_entity": "Weather entity",
+          "pv_power_sensor": "PV power sensor",
+          "heat_load_blind": "Window blind (sun load)",
+          "heat_load_pv_threshold": "Sun-load PV threshold (kW)"
         },
         "data_description": {
           "enable_motion": "Use motion sensor for presence-based adjustments",
@@ -38,9 +42,13 @@
           "outside_humidity_sensor": "Outside humidity: used to tell whether outdoor air is drier than the room",
           "adaptation_interval": "How often to adapt temperature (5-60 minutes)",
           "manual_cooldown_minutes": "How long to wait after you manually change a value before the automation adjusts again (minimum 60)",
-          "sensor_stale_minutes": "How old this room's temperature reading may be before control pauses. Sensors that report on change go quiet while a room is stable - battery-powered devices can be silent for an hour. Use a short window only for sensors that report continuously (5-240)",
+          "sensor_stale_minutes": "How old this room's temperature reading may be before control pauses. Sensors that report on change go quiet while a room is stable - battery Zigbee devices can be silent for an hour. Use a short window only for sensors that report continuously (5-240)",
           "heat_stale_minutes": "How old this room's temperature reading may be before a heat command is held back until the next report. Cooling and the general limit above are not affected. A value at or above the general limit has no effect (5-240)",
-          "outside_stale_minutes": "How old the outdoor reading may be before it is dropped from the comfort model. This is a dead-device window - hours, not minutes - and it judges a sensor that every room pointing at it shares (5-240)"
+          "outside_stale_minutes": "How old the outdoor reading may be before it is dropped from the comfort model. This is a dead-device window - hours, not minutes - and it judges a sensor that every room pointing at it shares (5-240)",
+          "weather_entity": "Weather entity whose hourly forecast night coast reads. Leave empty to run without a forecast: the outside temperature stands in when it is cooler than the room by the dusk outside gap, otherwise night coast does not apply",
+          "pv_power_sensor": "Solar PV power sensor (W or kW), used as a sunshine proxy by dusk coast and, with the blind below, by sun load. Leave empty and dusk uses the sun elevation only, and the room has no sun load",
+          "heat_load_blind": "Cover on this room's sunny window. With the PV power sensor set, PV at or above the threshold while the sun is up and this blind is not closed counts as sun load: the fan stage is skipped and the room cools at once. Leave empty for no sun load",
+          "heat_load_pv_threshold": "PV power at or above which the sun counts as shining on the window, for sun load only (0.1-50, default 1.0)"
         }
       }
     },
@@ -80,7 +88,11 @@
           "outside_stale_minutes": "Outdoor Sensor Staleness Limit (minutes)",
           "fresh_air_scene": "Fresh-Air Scene (optional)",
           "morning_window_start": "Morning Cooling Window Start",
-          "morning_window_end": "Morning Cooling Window End"
+          "morning_window_end": "Morning Cooling Window End",
+          "weather_entity": "Weather entity",
+          "pv_power_sensor": "PV power sensor",
+          "heat_load_blind": "Window blind (sun load)",
+          "heat_load_pv_threshold": "Sun-load PV threshold (kW)"
         },
         "data_description": {
           "outside_temp_sensor": "Outside temperature: sets the adaptive comfort temperature and whether a fan can help",
@@ -88,12 +100,16 @@
           "motion_sensor": "Motion sensor to detect room occupancy",
           "adaptation_interval": "How often to adapt temperature (5-60 minutes)",
           "manual_cooldown_minutes": "How long to wait after you manually change a value before the automation adjusts again (minimum 60)",
-          "sensor_stale_minutes": "How old this room's temperature reading may be before control pauses. Sensors that report on change go quiet while a room is stable - battery-powered devices can be silent for an hour. Use a short window only for sensors that report continuously (5-240)",
+          "sensor_stale_minutes": "How old this room's temperature reading may be before control pauses. Sensors that report on change go quiet while a room is stable - battery Zigbee devices can be silent for an hour. Use a short window only for sensors that report continuously (5-240)",
           "heat_stale_minutes": "How old this room's temperature reading may be before a heat command is held back until the next report. Cooling and the general limit above are not affected. A value at or above the general limit has no effect (5-240)",
           "outside_stale_minutes": "How old the outdoor reading may be before it is dropped from the comfort model. This is a dead-device window - hours, not minutes - and it judges a sensor that every room pointing at it shares (5-240)",
           "fresh_air_scene": "Activating this scene starts the fresh-air pause: the unit is not restarted for the pause length set on the room's Fresh Air Pause number",
           "morning_window_start": "Morning cooling starts no earlier than this time",
-          "morning_window_end": "Morning cooling starts no later than this time"
+          "morning_window_end": "Morning cooling starts no later than this time",
+          "weather_entity": "Weather entity whose hourly forecast night coast reads. Leave empty to run without a forecast: the outside temperature stands in when it is cooler than the room by the dusk outside gap, otherwise night coast does not apply",
+          "pv_power_sensor": "Solar PV power sensor (W or kW), used as a sunshine proxy by dusk coast and, with the blind below, by sun load. Leave empty and dusk uses the sun elevation only, and the room has no sun load",
+          "heat_load_blind": "Cover on this room's sunny window. With the PV power sensor set, PV at or above the threshold while the sun is up and this blind is not closed counts as sun load: the fan stage is skipped and the room cools at once. Leave empty for no sun load",
+          "heat_load_pv_threshold": "PV power at or above which the sun counts as shining on the window, for sun load only (0.1-50, default 1.0)"
         }
       },
       "offers": {

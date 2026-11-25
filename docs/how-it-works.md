@@ -120,7 +120,7 @@ Heat is first in the ladder and night coast never blocks it.
 
 ### Sun load
 
-If a room has sun-load inputs configured, a room that is over the cooling start while the sun is above the horizon, PV power is at or above 1.0 kW (a proxy for direct sun) and the room's blind is not closed skips the fan stage and cools at once. Any missing, unavailable or unknown input means no sun load: the signal can only bring cooling forward, never hold it back. The inputs are a table in `heat_load.py` keyed by climate entity; a room that has no entry never has sun load. Edit the table to point it at your own entities.
+If a room has a PV power sensor and a window blind set in its options, a room that is over the cooling start while the sun is above the horizon, PV power is at or above the sun-load PV threshold (default 1.0 kW, a proxy for direct sun) and the blind is not closed skips the fan stage and cools at once. Any missing, unavailable or unknown input means no sun load: the signal can only bring cooling forward, never hold it back. A room without both a PV sensor and a blind never has sun load.
 
 ### The HVAC Mode select
 
@@ -225,13 +225,13 @@ It applies, below heat in the ladder, when all of these hold:
 - The room is under the ceiling (default 25.0, adjustable 22 to 30).
 - Heat is not wanted.
 
-Missing inputs mean it does not apply; the signal can only hold cooling back when everything is readable. The forecast is the hourly forecast of the weather entity (`weather.home`), read about every 30 minutes, or every 2 minutes while none is held, and kept for at most 3 hours. If there is no usable forecast, the current outside temperature stands in for the forecast minimum, but only when it is at least 2.0 below the room.
+Missing inputs mean it does not apply; the signal can only hold cooling back when everything is readable. The forecast is the hourly forecast of the room's weather entity (an option), read about every 30 minutes, or every 2 minutes while none is held, and kept for at most 3 hours. If there is no usable forecast, or no weather entity is set, the current outside temperature stands in for the forecast minimum, but only when it is at least 2.0 below the room. Changing the weather entity drops the forecast read from the old one.
 
 While it applies, a unit that is cooling or drying is not simply cut. It gets the coast fan step: cool to fan only for 20 minutes (adjustable 5 to 60, low speed by default), then off. Once the step has ended, the unit stays off until the coast window ends. This never goes cool, off, fan. Turning the fan step off, or a unit with no `fan_only` mode, means the unit is stopped directly. Keep Climate On does not hold a cooling unit while coasting; heat is never waived.
 
 If the room reaches the ceiling (at or above) while it would coast, the normal ladder takes over and cools until it normally exits cooling. That state is latched, so a room hovering at the ceiling cannot short-cycle the compressor.
 
-Dusk is the start of the coast before the sun is actually down. It holds when the sun is above the horizon and setting, the room's own outside is at least 2.0 cooler than the room, and either the sun elevation is under 10 degrees or PV power is under 1.0 kW. Once dusk holds, it stays while looser tests pass (3 degrees more elevation, 0.5 kW more PV, 1.0 less gap), so a cloud edge across the PV threshold does not flip the unit.
+Dusk is the start of the coast before the sun is actually down. It holds when the sun is above the horizon and setting, the room's own outside is at least 2.0 cooler than the room, and either the sun elevation is under 10 degrees or PV power (from the room's PV power sensor, when one is set) is under 1.0 kW. Once dusk holds, it stays while looser tests pass (3 degrees more elevation, 0.5 kW more PV, 1.0 less gap), so a cloud edge across the PV threshold does not flip the unit.
 
 The night coast latch, the fan step flag and the forecast cache are in memory only. A restart clears them.
 
@@ -362,7 +362,7 @@ The first command after setup waits until the configured outside sensors have re
 
 - It does not learn preferences. In Auto mode the comfort temperature comes from a general model for people on average; Hybrid is the way to override it.
 - The monthly fallback temperatures are one fixed table inside `comfort.py`, not configurable. They only matter until a full day of outside history exists.
-- The weather entity (`weather.home`), the sun entity (`sun.sun`) and the dusk PV sensor (`sensor.pv_power`) are fixed in the code. Night coast and dusk need those entities to exist; without a forecast, the outside temperature stands in. Sun load is driven by a table keyed by climate entity in `heat_load.py` and does nothing for a room without an entry.
+- The sun entity is fixed to `sun.sun`. The weather entity, the PV power sensor and the sun-load blind are per-room options, all optional: without a weather entity the outside temperature stands in for the forecast, without a PV sensor dusk goes by the sun elevation only, and a room without both a PV sensor and a blind has no sun load.
 - The band shape, the dwell, the confirmation count, the humidity thresholds, the fan proof times, the cooling floor and the frozen-sensor window are constants, not options.
 - The 23.5 cooling floor applies in Hybrid as well as Auto. A Hybrid target below about 22.7 will not produce cooling while the room is under 23.5; the fan still can run.
 - Temperatures are Celsius only.

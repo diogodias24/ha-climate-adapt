@@ -49,11 +49,11 @@ from custom_components.climate_adapt.decision import (
 from custom_components.climate_adapt.night_coast import (
     DEFAULT_COAST_FAN_MINUTES,
     DEFAULT_COAST_FAN_SPEED,
-    PV_ENTITY,
     CoastInputs,
 )
 
 from .comfort_helpers import FULL_UNIT, MOTION_SENSOR, prepare_live, register_climate
+from .external_entities import HEAT_LOAD_BLIND, PV_POWER_SENSOR
 from .test_night_coast_wiring import Weather
 
 if TYPE_CHECKING:
@@ -63,7 +63,7 @@ CLIMATE = "climate.office_ac"
 TEMP = "sensor.office_temperature"
 HUMIDITY = "sensor.office_humidity"
 SUN = "sun.sun"
-BLIND = "cover.office_blind"
+BLIND = HEAT_LOAD_BLIND
 TC = 22.2
 ROOM = 24.0
 DUSK_DAY = datetime(2031, 11, 11, 17, 0, tzinfo=dt_util.UTC)
@@ -161,7 +161,7 @@ def office(hass, mock_config_entry_with_motion, unit, weather, freezer):
 
 def sky(hass: HomeAssistant, *, elevation: float, pv: float) -> None:
     hass.states.async_set(SUN, "above_horizon", {"elevation": elevation, "rising": False})
-    hass.states.async_set(PV_ENTITY, str(pv), {"unit_of_measurement": "kW"})
+    hass.states.async_set(PV_POWER_SENSOR, str(pv), {"unit_of_measurement": "kW"})
     hass.states.async_set(BLIND, "open")
 
 

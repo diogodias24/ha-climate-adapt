@@ -14,6 +14,8 @@ from .const import (
     CONF_CLIMATE_ENTITY,
     CONF_ENABLE_MOTION,
     CONF_FRESH_AIR_SCENE,
+    CONF_HEAT_LOAD_BLIND,
+    CONF_HEAT_LOAD_PV_THRESHOLD,
     CONF_HEAT_STALE_MINUTES,
     CONF_HUMIDITY_SENSOR,
     CONF_MANUAL_COOLDOWN,
@@ -30,9 +32,12 @@ from .const import (
     CONF_OUTSIDE_HUMIDITY_SENSOR,
     CONF_OUTSIDE_STALE_MINUTES,
     CONF_OUTSIDE_TEMP_SENSOR,
+    CONF_PV_POWER_SENSOR,
     CONF_SENSOR_STALE_MINUTES,
     CONF_TEMP_SENSOR,
+    CONF_WEATHER_ENTITY,
     DEFAULT_ADAPTATION_INTERVAL,
+    DEFAULT_HEAT_LOAD_PV_THRESHOLD_KW,
     DEFAULT_HEAT_STALE_MINUTES,
     DEFAULT_MANUAL_COOLDOWN_MINUTES,
     DEFAULT_NAME,
@@ -41,6 +46,8 @@ from .const import (
     DEFAULT_OUTSIDE_STALE_MINUTES,
     DEFAULT_SENSOR_STALE_MINUTES,
     DOMAIN,
+    HEAT_LOAD_PV_THRESHOLD_MAX_KW,
+    HEAT_LOAD_PV_THRESHOLD_MIN_KW,
     MOTION_HOLD_MAX_MINUTES,
     MOTION_HOLD_MIN_MINUTES,
 )
@@ -110,7 +117,36 @@ _ADVANCED_ENTITY_FIELDS: tuple[tuple[str, str], ...] = (
     (CONF_OUTSIDE_HUMIDITY_SENSOR, "outside_humidity_sensor"),
     (CONF_MOTION_SENSOR, "motion_sensor"),
     (CONF_FRESH_AIR_SCENE, "fresh_air_scene"),
+    (CONF_WEATHER_ENTITY, "weather_entity"),
+    (CONF_PV_POWER_SENSOR, "pv_power_sensor"),
+    (CONF_HEAT_LOAD_BLIND, "heat_load_blind"),
 )
+
+
+def _weather_selector() -> selector.EntitySelector:
+    return selector.EntitySelector(selector.EntitySelectorConfig(domain="weather"))
+
+
+def _pv_power_selector() -> selector.EntitySelector:
+    return selector.EntitySelector(
+        selector.EntitySelectorConfig(domain="sensor", device_class="power")
+    )
+
+
+def _blind_selector() -> selector.EntitySelector:
+    return selector.EntitySelector(selector.EntitySelectorConfig(domain="cover"))
+
+
+def _pv_threshold_selector() -> selector.NumberSelector:
+    return selector.NumberSelector(
+        selector.NumberSelectorConfig(
+            min=HEAT_LOAD_PV_THRESHOLD_MIN_KW,
+            max=HEAT_LOAD_PV_THRESHOLD_MAX_KW,
+            step=0.1,
+            unit_of_measurement="kW",
+            mode=selector.NumberSelectorMode.BOX,
+        )
+    )
 
 
 @config_entries.HANDLERS.register(DOMAIN)
@@ -229,6 +265,13 @@ class ClimateAdaptConfigFlow(config_entries.ConfigFlow):
                         mode=selector.NumberSelectorMode.BOX,
                     )
                 ),
+                vol.Optional(CONF_WEATHER_ENTITY): _weather_selector(),
+                vol.Optional(CONF_PV_POWER_SENSOR): _pv_power_selector(),
+                vol.Optional(CONF_HEAT_LOAD_BLIND): _blind_selector(),
+                vol.Optional(
+                    CONF_HEAT_LOAD_PV_THRESHOLD,
+                    default=DEFAULT_HEAT_LOAD_PV_THRESHOLD_KW,
+                ): _pv_threshold_selector(),
             }
         )
 
@@ -438,6 +481,21 @@ class ClimateAdaptOptionsFlow(config_entries.OptionsFlow):
                         mode=selector.NumberSelectorMode.BOX,
                     )
                 ),
+                entity_option_key(
+                    self._config_entry, CONF_WEATHER_ENTITY, "weather_entity"
+                ): _weather_selector(),
+                entity_option_key(
+                    self._config_entry, CONF_PV_POWER_SENSOR, "pv_power_sensor"
+                ): _pv_power_selector(),
+                entity_option_key(
+                    self._config_entry, CONF_HEAT_LOAD_BLIND, "heat_load_blind"
+                ): _blind_selector(),
+                vol.Optional(
+                    CONF_HEAT_LOAD_PV_THRESHOLD,
+                    default=effective_option(
+                        self._config_entry, "heat_load_pv_threshold"
+                    ),
+                ): _pv_threshold_selector(),
             }
         )
 

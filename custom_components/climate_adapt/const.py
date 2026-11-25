@@ -82,6 +82,22 @@ CONF_FRESH_AIR_SCENE = "fresh_air_scene"
 CONF_MORNING_WINDOW_START = "morning_window_start"
 CONF_MORNING_WINDOW_END = "morning_window_end"
 
+# Entities outside the room, per entry. All optional; an unset one turns off
+# only what reads it, the same way an unreadable state does.
+#
+# The weather entity gives night coast its hourly forecast; without one the
+# outside temperature stands in. The PV power sensor is the dusk test's PV and,
+# with the blind, the sun-load signal. A room has sun load only when both the
+# PV sensor and its blind are set.
+CONF_WEATHER_ENTITY = "weather_entity"
+CONF_PV_POWER_SENSOR = "pv_power_sensor"
+CONF_HEAT_LOAD_BLIND = "heat_load_blind"
+CONF_HEAT_LOAD_PV_THRESHOLD = "heat_load_pv_threshold"
+# PV power at or above this is taken as direct sun on the window (kW).
+DEFAULT_HEAT_LOAD_PV_THRESHOLD_KW = 1.0
+HEAT_LOAD_PV_THRESHOLD_MIN_KW = 0.1
+HEAT_LOAD_PV_THRESHOLD_MAX_KW = 50.0
+
 CONF_OFFER_ENABLED = "offer_enabled"
 CONF_OFFER_PERSON = "offer_person"
 CONF_OFFER_NOTIFY_SERVICE = "offer_notify_service"

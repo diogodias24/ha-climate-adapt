@@ -22,6 +22,8 @@ from custom_components.climate_adapt.const import (
 )
 from custom_components.climate_adapt.coordinator import ClimateAdaptCoordinator
 
+from .external_entities import EXTERNAL_ENTITIES
+
 
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(enable_custom_integrations):
@@ -65,6 +67,7 @@ def mock_config_entry() -> MockConfigEntry:
             CONF_TEMP_SENSOR: "sensor.office_temperature",
             CONF_HUMIDITY_SENSOR: "sensor.office_humidity",
             CONF_ENABLE_MOTION: False,
+            **EXTERNAL_ENTITIES,
         },
         options={},
     )
@@ -83,6 +86,7 @@ def mock_config_entry_with_outside() -> MockConfigEntry:
             CONF_HUMIDITY_SENSOR: "sensor.office_humidity",
             CONF_OUTSIDE_TEMP_SENSOR: "sensor.outside_temperature",
             CONF_OUTSIDE_HUMIDITY_SENSOR: "sensor.outside_humidity",
+            **EXTERNAL_ENTITIES,
         },
         options={},
     )
@@ -101,6 +105,7 @@ def mock_config_entry_with_motion() -> MockConfigEntry:
             CONF_HUMIDITY_SENSOR: "sensor.office_humidity",
             CONF_ENABLE_MOTION: True,
             CONF_MOTION_SENSOR: "binary_sensor.office_motion",
+            **EXTERNAL_ENTITIES,
         },
         options={},
     )

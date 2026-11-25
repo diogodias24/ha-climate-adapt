@@ -13,7 +13,7 @@ from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.const import STATE_HOME, STATE_UNAVAILABLE, STATE_UNKNOWN
-from homeassistant.core import Context, callback
+from homeassistant.core import Context, State, callback
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.event import (
     async_track_point_in_utc_time,
@@ -45,6 +45,8 @@ from .const import (
     CONF_CLIMATE_ENTITY,
     CONF_ENABLE_MOTION,
     CONF_FRESH_AIR_SCENE,
+    CONF_HEAT_LOAD_BLIND,
+    CONF_HEAT_LOAD_PV_THRESHOLD,
     CONF_HEAT_STALE_MINUTES,
     CONF_HUMIDITY_SENSOR,
     CONF_MANUAL_COOLDOWN,
@@ -56,9 +58,12 @@ from .const import (
     CONF_OUTSIDE_HUMIDITY_SENSOR,
     CONF_OUTSIDE_STALE_MINUTES,
     CONF_OUTSIDE_TEMP_SENSOR,
+    CONF_PV_POWER_SENSOR,
     CONF_SENSOR_STALE_MINUTES,
     CONF_TEMP_SENSOR,
+    CONF_WEATHER_ENTITY,
     DEFAULT_ADAPTATION_INTERVAL,
+    DEFAULT_HEAT_LOAD_PV_THRESHOLD_KW,
     DEFAULT_HEAT_STALE_MINUTES,
     DEFAULT_HVAC_MODE,
     DEFAULT_MANUAL_COOLDOWN_MINUTES,
@@ -154,7 +159,7 @@ from .fresh_air import (
 from .heat_load import (
     NO_HEAT_LOAD,
     HeatLoad,
-    heat_load_inputs_for,
+    heat_load_inputs,
     kilowatts,
     read_heat_load,
 )
@@ -185,9 +190,7 @@ from .night_coast import (
     FORECAST_HOURS_MIN,
     MARGIN_MAX,
     MARGIN_MIN,
-    PV_ENTITY,
     SOURCE_NONE,
-    WEATHER_ENTITY,
     CoastInputs,
     DuskReading,
     DuskSettings,
@@ -361,6 +364,26 @@ OPTION_SPECS: tuple[OptionSpec, ...] = (
         default=DEFAULT_MORNING_WINDOW_END,
         coerce=str,
     ),
+    # Read off the state machine at each tick, never subscribed to, so a
+    # change takes effect at the next evaluation without a reload.
+    OptionSpec(
+        attr="weather_entity",
+        key=CONF_WEATHER_ENTITY,
+    ),
+    OptionSpec(
+        attr="pv_power_sensor",
+        key=CONF_PV_POWER_SENSOR,
+    ),
+    OptionSpec(
+        attr="heat_load_blind",
+        key=CONF_HEAT_LOAD_BLIND,
+    ),
+    OptionSpec(
+        attr="heat_load_pv_threshold",
+        key=CONF_HEAT_LOAD_PV_THRESHOLD,
+        default=DEFAULT_HEAT_LOAD_PV_THRESHOLD_KW,
+        coerce=float,
+    ),
 )
 
 OPTION_SPECS_BY_ATTR: dict[str, OptionSpec] = {spec.attr: spec for spec in OPTION_SPECS}
@@ -528,6 +551,10 @@ class ClimateAdaptCoordinator(DataUpdateCoordinator):
         self.fresh_air_scene: str | None = self._resolve_option("fresh_air_scene")
         self.morning_window_start: str = self._resolve_option("morning_window_start")
         self.morning_window_end: str = self._resolve_option("morning_window_end")
+        self.weather_entity: str | None = self._resolve_option("weather_entity")
+        self.pv_power_sensor: str | None = self._resolve_option("pv_power_sensor")
+        self.heat_load_blind: str | None = self._resolve_option("heat_load_blind")
+        self.heat_load_pv_threshold: float = self._resolve_option("heat_load_pv_threshold")
 
         super().__init__(
             hass,
@@ -577,6 +604,8 @@ class ClimateAdaptCoordinator(DataUpdateCoordinator):
         self._morning_run = False
         self._forecast = ForecastCache()
         self._forecast_failing = False
+        # The weather entity the cache was read from; see `_async_refresh_forecast`.
+        self._forecast_entity: str | None = None
         self.hvac_mode: str = DEFAULT_HVAC_MODE
         self.perceived_temp = 0.0
         # 0.0 above is a placeholder: a room with no usable reading yet must
@@ -3541,7 +3570,7 @@ class ClimateAdaptCoordinator(DataUpdateCoordinator):
             sun_state=None if sun is None else sun.state,
             rising=attributes.get("rising"),
             elevation=None if elevation is None else float(elevation),
-            pv_kw=kilowatts(self.hass.states.get(PV_ENTITY)),
+            pv_kw=kilowatts(self._state_of(self.pv_power_sensor)),
             room=room,
             outside=outside,
             was_active=self._dusk_active,
@@ -3603,8 +3632,17 @@ class ClimateAdaptCoordinator(DataUpdateCoordinator):
         while night coast is off. The sun does not matter: the forecast has to be
         there before dusk needs it. Any failure, and an empty answer, leave no
         forecast; the outside temperature then stands in for it.
+
+        The cache belongs to the weather entity it was read from, so a changed
+        or cleared entity drops it. With no weather entity set nothing is read
+        and nothing is logged: the room runs as it would on a failed read.
         """
-        if not self.night_coast_enabled or not self._forecast.due(now):
+        if self._forecast_entity != self.weather_entity:
+            self._forecast = ForecastCache()
+            self._forecast_failing = False
+            self._forecast_entity = self.weather_entity
+        weather = self.weather_entity
+        if not weather or not self.night_coast_enabled or not self._forecast.due(now):
             return
         entries: list[tuple[datetime, float]] = []
         problem: object = "the answer held no hourly entries"
@@ -3613,11 +3651,11 @@ class ClimateAdaptCoordinator(DataUpdateCoordinator):
                 response = await self.hass.services.async_call(
                     "weather",
                     "get_forecasts",
-                    {"entity_id": WEATHER_ENTITY, "type": "hourly"},
+                    {"entity_id": weather, "type": "hourly"},
                     blocking=True,
                     return_response=True,
                 )
-            entries = parse_forecast(response)
+            entries = parse_forecast(response, weather)
         except Exception as err:
             problem = err
         if not entries and not self._forecast_failing:
@@ -3626,7 +3664,7 @@ class ClimateAdaptCoordinator(DataUpdateCoordinator):
                 "temperature stands in for the forecast minimum while it is at least "
                 "%.1f K under the room, otherwise night coast does not apply",
                 self.climate_entity,
-                WEATHER_ENTITY,
+                weather,
                 problem,
                 self.dusk_coast_outside_gap,
             )
@@ -3634,19 +3672,26 @@ class ClimateAdaptCoordinator(DataUpdateCoordinator):
             _LOGGER.info(
                 "Night coast for %s: the hourly forecast from %s is back (%d entries)",
                 self.climate_entity,
-                WEATHER_ENTITY,
+                weather,
                 len(entries),
             )
         self._forecast_failing = not entries
         self._forecast.record(entries, now)
 
+    def _state_of(self, entity_id: str | None) -> State | None:
+        """The state of an optional entity; None when it is not set or not there."""
+        return self.hass.states.get(entity_id) if entity_id else None
+
     def _read_heat_load(self) -> HeatLoad:
         """Sun load on this room, read off the states of its inputs.
 
-        Read-only: nothing here writes to HA or to the entry. A room with no
-        inputs, or any input unreadable, has no sun load.
+        Read-only: nothing here writes to HA or to the entry. A room without
+        both a PV sensor and a blind set, or any input unreadable, has no sun
+        load.
         """
-        inputs = heat_load_inputs_for(self.climate_entity)
+        inputs = heat_load_inputs(
+            self.pv_power_sensor, self.heat_load_blind, self.heat_load_pv_threshold
+        )
         if inputs is None:
             return NO_HEAT_LOAD
         states = self.hass.states
